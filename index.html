@@ -1,169 +1,394 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sqidgeon | Projects</title>
-  <style>
-    body {
-      margin: 0;
-      background: black;
-      overflow: hidden;
-      color: white;
-      font-family: Arial, sans-serif;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sqidgeon | Projects</title>
+<style>
+body{margin:0;background:#000;color:#fff;font-family:'Segoe UI',sans-serif;overflow-x:hidden}
+canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
 
-    /* Starfield canvas stays fixed */
-    canvas {
-      position: fixed !important;
-      top: 0;
-      left: 0;
-      width: 100vw !important;
-      height: 100vh !important;
-      z-index: 0;
-      pointer-events: none;
-    }
+#content-box,.project-card{
+  background:#1a1826;
+  border-radius:16px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.4);
+}
+#content-box{
+  position:relative;margin:60px auto 0 auto;width:650px;padding:50px;text-align:center;
+  border:none;opacity:0;animation:fadeIn 1.6s forwards;z-index:2;
+}
+.project-card{
+  margin:35px auto;width:88%;max-width:920px;overflow:hidden;
+  transition:transform .35s ease;
+  box-shadow:0 8px 30px rgba(0,0,0,0.4);
+}
+.project-card:hover{transform:translateY(-8px)}
 
-    /* Centered content box */
-    #content-box {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 350px;
-      padding: 30px;
-      text-align: center;
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      z-index: 2;
-      opacity: 0;
-      animation: fadeIn 1.7s ease-out forwards;
-    }
+#gday{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:25px}
+.gday-gif{width:90px;height:90px}
+#gday h2{margin:0;color:#d4b3ff;font-size:2em}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
 
-    #content-box h1 {
-      margin: 0;
-      font-size: 2em;
-      color: #d3d3d3;
-    }
+#project-scroll{padding:70px 20px 20px;position:relative;z-index:2}
 
-    #content-box p {
-      margin-top: 15px;
-      font-size: 1.2em;
-      color: #c0c0c0;
-    }
+.project-top{
+  display:flex;align-items:center;justify-content:space-between;padding:20px 24px;
+  cursor:pointer;
+}
+.project-left{display:flex;align-items:center;gap:18px}
+.project-logo{width:80px;height:80px;border-radius:14px;border:none;object-fit:cover}
+.project-left-info h3{margin:0;font-size:1.38em}
+.project-left-info p{margin:5px 0 0;font-size:0.95em;color:#d0c8ff}
 
-    /* Home icon under text */
-    #home-icon {
-      margin-top: 20px;
-      width: 40px;
-      height: 40px;
-      cursor: pointer;
-      opacity: 0.8;
-      transition: opacity 0.2s ease, transform 0.2s ease;
-    }
-    #home-icon:hover {
-      opacity: 1;
-      transform: scale(1.1);
-    }
+.project-right{display:flex;align-items:center;gap:16px}
+.project-right img{width:36px;height:36px;transition:.3s}
+.modrinth-icon{filter:brightness(0) saturate(100%) invert(48%) sepia(99%) saturate(748%) hue-rotate(80deg) brightness(98%) contrast(105%);}
+.modrinth-icon:hover{transform:scale(1.2);}
+.curseforge-icon{filter:invert(1)}
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
-      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+.show-more-btn{
+  width:40px;height:40px;background:none;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.show-more-btn svg{
+  width:26px;height:26px;stroke:#00ff88;stroke-width:2.4;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;transition:transform .5s;
+}
+
+.project-extra{
+  max-height:0;overflow:hidden;padding:0 20px;
+  background:rgba(20,18,35,0.8);border-top:1px solid rgba(178,135,255,0.4);
+  opacity:0;transform:translateY(-10px);
+  transition:max-height .7s ease,padding .7s ease,opacity .6s ease,transform .6s ease;
+}
+.project-extra.open{
+  max-height:900px;padding:30px 24px;
+  opacity:1;transform:translateY(0);
+}
+
+/* Platform-correct colored borders */
+.banners{
+  display:flex;justify-content:center;gap:30px;margin-top:25px;flex-wrap:wrap;
+}
+.banners img{
+  max-width:100%;max-height:155px;
+  border-radius:12px;
+  border:4px solid;
+  transition:none;
+}
+
+/* Modrinth = green */
+.banners img[src*="modrinth"]{
+  border-color:#00ff88;
+  box-shadow:0 0 20px rgba(0,255,136,0.3);
+}
+
+/* CurseForge = orange */
+.banners img[src*="curseforge"]{
+  border-color:#f16436;
+  box-shadow:0 0 20px rgba(241,100,54,0.3);
+}
+
+.overlay-dark{
+  position:fixed;inset:0;background:rgba(0,0,0,0);z-index:1;
+  pointer-events:none;transition:.5s;
+}
+.overlay-dark.active{background:rgba(0,0,0,0.6);pointer-events:auto}
+
+.fade-section{opacity:0;transform:translateY(30px);transition:1s}
+.fade-section.visible{opacity:1;transform:translateY(0)}
+</style>
 </head>
 <body>
 
-  <!-- Center box -->
-  <div id="content-box">
-    <h1>Projects</h1>
-    <p>Page Under Construction</p>
-    <!-- Home icon below -->
-    <a href="https://sqidgeon.uk" title="Return Home">
-      <svg id="home-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-      </svg>
-    </a>
+<canvas id="stars"></canvas>
+<div class="overlay-dark" id="overlay"></div>
+
+<div id="content-box">
+  <div id="gday">
+    <img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" class="gday-gif" alt="wave">
+    <h2>G'day!</h2>
+  </div>
+  <h1>Projects</h1>
+  <p>Here is the list of where to download my projects.</p>
+</div>
+
+<div id="project-scroll">
+
+  <!-- PROJECT 1 -->
+  <div class="project-card fade-section">
+    <div class="project-top" onclick="toggleExtra(this)">
+      <div class="project-left">
+        <img src="https://cdn.modrinth.com/data/LjEwapcM/1717c1c11cca2144d76be0ec54aecb8a91b2378e.png" class="project-logo" alt="Logo">
+        <div class="project-left-info">
+          <h3>Small Totems</h3>
+          <p>Makes The Totem Of Undying Smaller.</p>
+        </div>
+      </div>
+      <div class="project-right">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/modrinth.svg" class="modrinth-icon">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/curseforge.svg" class="curseforge-icon" style="width:38px">
+        <button class="show-more-btn"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+    </div>
+
+    <div class="project-extra">
+      <p>Small Totems ;)</p>
+      <p>Available on both CurseForge & Modrinth</p>
+      <div class="banners">
+        <a href="https://modrinth.com/resourcepack/smalltotems" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/modrinthbanner.png">
+        </a>
+        <a href="https://www.curseforge.com/minecraft/texture-packs/smalltotem" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/curseforgebanner.png">
+        </a>
+      </div>
+    </div>
   </div>
 
-  <script>
-    // Setup starfield
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.z = 1;
-    camera.rotation.x = Math.PI / 2;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+  <!-- PROJECT 2 -->
+  <div class="project-card fade-section">
+    <div class="project-top" onclick="toggleExtra(this)">
+      <div class="project-left">
+        <img src="https://media.forgecdn.net/avatars/thumbnails/1419/434/64/64/638919682587460489.png" class="project-logo">
+        <div class="project-left-info">
+          <h3>Smol PVP Swords</h3>
+          <p>A Pack To Make Swords Smaller.</p>
+        </div>
+      </div>
+      <div class="project-right">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/modrinth.svg" class="modrinth-icon">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/curseforge.svg" class="curseforge-icon" style="width:38px">
+        <button class="show-more-btn"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+    </div>
 
-    function generateTexture() {
-      const canvas = document.createElement("canvas");
-      canvas.width = 16;
-      canvas.height = 16;
-      const ctx = canvas.getContext("2d");
-      ctx.beginPath();
-      ctx.arc(8, 8, 8, 0, Math.PI * 2);
-      ctx.fillStyle = "white";
-      ctx.fill();
-      return canvas;
-    }
+    <div class="project-extra">
+      <p>Small PVP Swords ;)</p>
+      <p>Available on Modrinth & CurseForge</p>
+      <div class="banners">
+        <a href="https://modrinth.com/resourcepack/smolswords" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/modrinthbanner.png">
+        </a>
+        <a href="https://www.curseforge.com/minecraft/texture-packs/smolswords" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/curseforgebanner.png">
+        </a>
+      </div>
+    </div>
+  </div>
 
-    const sprite = new THREE.CanvasTexture(generateTexture());
-    const starsCount = 6000;
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(starsCount * 3);
 
-    for (let i = 0; i < starsCount * 3; i += 3) {
-      positions[i] = (Math.random() - 0.5) * 2000;
-      positions[i + 1] = (Math.random() - 0.5) * 2000;
-      positions[i + 2] = (Math.random() - 0.5) * 2000;
-    }
+  <!-- PROJECT 3 -->
+  <div class="project-card fade-section">
+    <div class="project-top" onclick="toggleExtra(this)">
+      <div class="project-left">
+        <img src="https://cdn.sqidgeon.uk/images/defaultlogo.png" class="project-logo">
+        <div class="project-left-info">
+          <h3>Project Three</h3>
+          <p>A short description for project three.</p>
+        </div>
+      </div>
+      <div class="project-right">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/modrinth.svg" class="modrinth-icon">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/curseforge.svg" class="curseforge-icon" style="width:38px">
+        <button class="show-more-btn"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+    </div>
 
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    <div class="project-extra">
+      <p>Project three extended info.</p>
+      <div class="banners">
+        <a href="#" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/modrinthbanner.png">
+        </a>
+        <a href="#" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/curseforgebanner.png">
+        </a>
+      </div>
+    </div>
+  </div>
 
-    const material = new THREE.PointsMaterial({
-      color: 0xffffff,
-      size: 2,
-      map: sprite,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthTest: false
-    });
 
-    const stars = new THREE.Points(geometry, material);
-    scene.add(stars);
+  <!-- PROJECT 4 -->
+  <div class="project-card fade-section">
+    <div class="project-top" onclick="toggleExtra(this)">
+      <div class="project-left">
+        <img src="https://cdn.sqidgeon.uk/images/defaultlogo.png" class="project-logo">
+        <div class="project-left-info">
+          <h3>Project Four</h3>
+          <p>Description for project four.</p>
+        </div>
+      </div>
+      <div class="project-right">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/modrinth.svg" class="modrinth-icon">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/curseforge.svg" class="curseforge-icon" style="width:38px">
+        <button class="show-more-btn"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+    </div>
 
-    const velocities = new Array(starsCount).fill(0);
-    const acceleration = 0.02;
+    <div class="project-extra">
+      <p>More details about project four.</p>
+      <div class="banners">
+        <a href="#" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/modrinthbanner.png">
+        </a>
+        <a href="#" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/curseforgebanner.png">
+        </a>
+      </div>
+    </div>
+  </div>
 
-    function animate() {
-      const pos = geometry.attributes.position.array;
-      for (let i = 0; i < starsCount; i++) {
-        velocities[i] += acceleration;
-        pos[i * 3 + 1] += velocities[i];
-        if (pos[i * 3 + 1] > 1000) {
-          pos[i * 3 + 1] = -1000;
-          velocities[i] = 0;
-        }
-      }
-      geometry.attributes.position.needsUpdate = true;
-      stars.rotation.y += 0.002;
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
-    }
-    animate();
 
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
+  <!-- PROJECT 5 -->
+  <div class="project-card fade-section">
+    <div class="project-top" onclick="toggleExtra(this)">
+      <div class="project-left">
+        <img src="https://cdn.sqidgeon.uk/images/defaultlogo.png" class="project-logo">
+        <div class="project-left-info">
+          <h3>Project Five</h3>
+          <p>Description for your fifth project.</p>
+        </div>
+      </div>
+      <div class="project-right">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/modrinth.svg" class="modrinth-icon">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/curseforge.svg" class="curseforge-icon" style="width:38px">
+        <button class="show-more-btn"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+    </div>
+
+    <div class="project-extra">
+      <p>Extended info for project five.</p>
+      <div class="banners">
+        <a href="#" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/modrinthbanner.png">
+        </a>
+        <a href="#" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/curseforgebanner.png">
+        </a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- PROJECT 6 -->
+  <div class="project-card fade-section">
+    <div class="project-top" onclick="toggleExtra(this)">
+      <div class="project-left">
+        <img src="https://cdn.sqidgeon.uk/images/defaultlogo.png" class="project-logo">
+        <div class="project-left-info">
+          <h3>Project Six</h3>
+          <p>Description for project six.</p>
+        </div>
+      </div>
+      <div class="project-right">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/modrinth.svg" class="modrinth-icon">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/curseforge.svg" class="curseforge-icon" style="width:38px">
+        <button class="show-more-btn"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+    </div>
+
+    <div class="project-extra">
+      <p>More info about project six.</p>
+      <div class="banners">
+        <a href="#" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/modrinthbanner.png">
+        </a>
+        <a href="#" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/curseforgebanner.png">
+        </a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- PROJECT 7 -->
+  <div class="project-card fade-section">
+    <div class="project-top" onclick="toggleExtra(this)">
+      <div class="project-left">
+        <img src="https://cdn.sqidgeon.uk/images/defaultlogo.png" class="project-logo">
+        <div class="project-left-info">
+          <h3>Project Seven</h3>
+          <p>Description for the seventh project.</p>
+        </div>
+      </div>
+      <div class="project-right">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/modrinth.svg" class="modrinth-icon">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons@latest/icons/curseforge.svg" class="curseforge-icon" style="width:38px">
+        <button class="show-more-btn"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+    </div>
+
+    <div class="project-extra">
+      <p>Extra details for project seven.</p>
+      <div class="banners">
+        <a href="#" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/modrinthbanner.png">
+        </a>
+        <a href="#" target="_blank">
+          <img src="https://cdn.sqidgeon.uk/images/curseforgebanner.png">
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const observer = new IntersectionObserver(e=>e.forEach(en=>en.isIntersecting&&en.target.classList.add('visible')),{threshold:0.2});
+document.querySelectorAll('.fade-section').forEach(el=>observer.observe(el));
+
+function toggleExtra(header){
+  const card = header.closest('.project-card');
+  const extra = card.querySelector('.project-extra');
+  const arrow = card.querySelector('.show-more-btn svg');
+  const overlay = document.getElementById('overlay');
+
+  const isOpen = extra.classList.contains('open');
+
+  document.querySelectorAll('.project-extra.open').forEach(o=>{
+    o.classList.remove('open');
+    o.closest('.project-card').querySelector('.show-more-btn svg').style.transform = '';
+  });
+
+  if(!isOpen){
+    extra.classList.add('open');
+    arrow.style.transform = 'rotate(180deg)';
+    overlay.classList.add('active');
+  } else {
+    extra.classList.remove('open');
+    arrow.style.transform = '';
+    overlay.classList.remove('active');
+  }
+}
+
+/* Original white stars */
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+const stars = Array.from({length:300},()=>({
+  x:Math.random()*canvas.width,
+  y:Math.random()*canvas.height,
+  r:Math.random()*1.8+0.5
+}));
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='white';
+  stars.forEach(s=>{
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+
+window.addEventListener('resize',()=>{canvas.width=innerWidth;canvas.height=innerHeight;});
+</script>
 
 </body>
 </html>
